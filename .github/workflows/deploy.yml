@@ -1,0 +1,40 @@
+name: deploy
+
+on:
+  push:
+    branches: main
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://nuc.wouterds.be
+    env:
+      HOST: ${{ secrets.CLOUDFLARE_TUNNEL }}
+      USER: code
+      DIRECTORY: /code/be.wouterds.nuc
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          wget -q https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
+          sudo dpkg -i cloudflared-linux-amd64.deb
+      - uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      - run: |
+          echo "Host ${{ env.HOST }}" >> ~/.ssh/config
+          echo "  ProxyCommand $(which cloudflared) access ssh --hostname %h" >> ~/.ssh/config
+          echo "  StrictHostKeyChecking no" >> ~/.ssh/config
+          chmod 600 ~/.ssh/config
+      - run: |
+          ssh ${{ env.USER }}@${{ env.HOST }} "mkdir -p ${{ env.DIRECTORY }}"
+          scp .docker/docker-compose.yml ${{ env.USER }}@${{ env.HOST }}:${{ env.DIRECTORY }}/docker-compose.yml
+          scp .docker/nginx.conf ${{ env.USER }}@${{ env.HOST }}:${{ env.DIRECTORY }}/nginx.conf
+          scp .docker/stats.js ${{ env.USER }}@${{ env.HOST }}:${{ env.DIRECTORY }}/stats.js
+          ssh ${{ env.USER }}@${{ env.HOST }} "cd ${{ env.DIRECTORY }} && docker compose pull && docker compose up -d --force-recreate"
