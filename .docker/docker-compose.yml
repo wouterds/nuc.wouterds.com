@@ -6,6 +6,7 @@ services:
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
       - "traefik.http.middlewares.bewouterdsnuc.redirectscheme.scheme=https"
       - "traefik.http.routers.bewouterdsnuc-http.rule=Host(`nuc.wouterds.be`)"
       - "traefik.http.routers.bewouterdsnuc-http.entrypoints=web"
@@ -18,6 +19,16 @@ services:
       - ./stats.js:/etc/nginx/stats.js:ro
     networks:
       - proxy
+      - nuc
+
+  node:
+    image: ghcr.io/wouterds/nuc.wouterds.be
+    mem_limit: 128mb
+    container_name: be.wouterds.nuc--node
+    restart: unless-stopped
+    env_file: .env
+    networks:
+      - nuc
 
   glances:
     image: nicolargo/glances
@@ -29,8 +40,10 @@ services:
       - /:/mnt/disk1:ro
       - /data:/mnt/disk2:ro
     networks:
-      - proxy
+      - nuc
 
 networks:
   proxy:
     external: true
+  nuc:
+    name: nuc

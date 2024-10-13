@@ -1,1 +1,8 @@
+node_modules
+
+/.cache
+/build
+.env
+
 .DS_Store
+vite.config.ts.*
