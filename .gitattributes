@@ -1,0 +1,4 @@
+.eslintrc.cjs linguist-generated=false
+.prettierrc.cjs linguist-generated=false
+postcss.config.js linguist-generated=false
+public/* linguist-generated=false
