@@ -17,7 +17,7 @@ export default function Index() {
   const { revalidate, state } = useRevalidator();
 
   useEffect(() => {
-    if (state === 'idle') {
+    if (state !== 'loading') {
       const timeout = setTimeout(() => {
         revalidate();
       }, 1000);

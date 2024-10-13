@@ -4,11 +4,18 @@
 
 html,
 body {
-  @apply bg-white;
-  @apply h-full min-h-full;
+  @apply min-h-full;
+  @apply bg-white dark:bg-zinc-900;
 }
 
 body {
-  @apply min-h-full w-full;
-  @apply flex flex-col;
+  @apply font-mono text-xs;
+  @apply text-black dark:text-white;
+  @apply p-6;
+}
+
+a {
+  @apply px-0.5 -mx-0.5;
+  @apply hover:text-white hover:bg-zinc-900;
+  @apply dark:hover:bg-white dark:hover:text-black;
 }

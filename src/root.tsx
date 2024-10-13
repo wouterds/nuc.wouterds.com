@@ -1,8 +1,10 @@
 import './tailwind.css';
 
-import type { LinksFunction } from '@remix-run/node';
-import { Links, Meta, Outlet, Scripts } from '@remix-run/react';
-import { ReactNode } from 'react';
+import type { LinksFunction, LoaderFunctionArgs } from '@remix-run/node';
+import { Links, Meta, Outlet, Scripts, useLoaderData } from '@remix-run/react';
+
+import Footer from './components/footer';
+import Header from './components/header';
 
 export const links: LinksFunction = () => [
   { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
@@ -17,7 +19,15 @@ export const links: LinksFunction = () => [
   },
 ];
 
-export const Layout = ({ children }: { children: ReactNode }) => {
+export const loader = async ({ request }: LoaderFunctionArgs) => {
+  return {
+    ray: request.headers.get('cf-ray'),
+  };
+};
+
+const App = () => {
+  const { ray } = useLoaderData<typeof loader>();
+
   return (
     <html lang="en">
       <head>
@@ -27,16 +37,18 @@ export const Layout = ({ children }: { children: ReactNode }) => {
         <Links />
       </head>
       <body>
-        {children}
+        <div className="mx-auto max-w-sm">
+          <Header />
+          <main>
+            <Outlet />
+          </main>
+          <Footer ray={ray} />
+        </div>
         {/* <ScrollRestoration /> */}
         <Scripts />
       </body>
     </html>
   );
-};
-
-const App = () => {
-  return <Outlet />;
 };
 
 export default App;
