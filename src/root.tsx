@@ -39,7 +39,7 @@ const App = () => {
       <body>
         <div className="mx-auto max-w-sm">
           <Header />
-          <main>
+          <main className="py-6">
             <Outlet />
           </main>
           <Footer ray={ray} />
