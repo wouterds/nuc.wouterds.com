@@ -24,7 +24,7 @@
     "@commitlint/config-conventional": "^19.5.0",
     "@remix-run/dev": "^2.13.1",
     "@types/react": "^18.3.11",
-    "@types/react-dom": "^18.2.7",
+    "@types/react-dom": "^18.3.1",
     "@typescript-eslint/eslint-plugin": "^8.8.1",
     "@typescript-eslint/parser": "^8.6.0",
     "autoprefixer": "^10.4.19",
