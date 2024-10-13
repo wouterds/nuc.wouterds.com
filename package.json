@@ -1,0 +1,52 @@
+{
+  "name": "nuc.wouterds.be",
+  "private": true,
+  "sideEffects": false,
+  "type": "module",
+  "scripts": {
+    "build": "remix vite:build",
+    "dev": "remix vite:dev",
+    "start": "remix-serve ./build/server/index.js",
+    "lint": "eslint --ignore-path .gitignore --cache --cache-location ./node_modules/.cache/eslint ./src",
+    "lint:fix": "eslint --ignore-path .gitignore --cache --cache-location ./node_modules/.cache/eslint --fix ./src",
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "@remix-run/node": "^2.12.1",
+    "@remix-run/react": "^2.12.1",
+    "@remix-run/serve": "^2.12.1",
+    "isbot": "^5.1.17",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.5.0",
+    "@commitlint/config-conventional": "^19.5.0",
+    "@remix-run/dev": "^2.12.1",
+    "@types/react": "^18.3.10",
+    "@types/react-dom": "^18.2.7",
+    "@typescript-eslint/eslint-plugin": "^8.8.0",
+    "@typescript-eslint/parser": "^8.6.0",
+    "autoprefixer": "^10.4.19",
+    "eslint": "^8.38.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-import-resolver-typescript": "^3.6.1",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-jsx-a11y": "^6.10.0",
+    "eslint-plugin-prettier": "^5.2.1",
+    "eslint-plugin-react": "^7.37.1",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-simple-import-sort": "^12.1.1",
+    "lefthook": "^1.7.18",
+    "postcss": "^8.4.38",
+    "tailwindcss": "^3.4.4",
+    "typescript": "^5.3.3",
+    "vite": "^5.4.8",
+    "vite-tsconfig-paths": "^5.0.1"
+  },
+  "engines": {
+    "node": "^20.0.0",
+    "npm": "^10.8.0"
+  },
+  "packageManager": "npm@10.8.2"
+}
