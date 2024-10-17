@@ -34,6 +34,7 @@ services:
     image: nicolargo/glances
     container_name: be.wouterds.nuc--glances
     mem_limit: 128mb
+    restart: unless-stopped
     pid: host
     command: glances -w
     volumes:
