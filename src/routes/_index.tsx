@@ -5,7 +5,7 @@ import { useEffect } from 'react';
 import Progress from '~/components/progress';
 
 export const meta: MetaFunction = () => {
-  return [{ title: 'nuc.wouterds.be' }];
+  return [{ title: 'nuc.wouterds.com' }];
 };
 
 export const loader = async () => {

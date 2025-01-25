@@ -16,7 +16,7 @@ concurrency:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: wouterds/nuc.wouterds.be
+  IMAGE_NAME: wouterds/nuc.wouterds.com
 
 jobs:
   build:
@@ -56,11 +56,11 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: production
-      url: https://nuc.wouterds.be
+      url: https://nuc.wouterds.com
     env:
       HOST: ${{ secrets.CLOUDFLARE_TUNNEL }}
       USER: code
-      DIRECTORY: /code/be.wouterds.nuc
+      DIRECTORY: /code/com.wouterds.nuc
     steps:
       - uses: actions/checkout@v4
       - run: |

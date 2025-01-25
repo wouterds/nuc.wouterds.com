@@ -1,19 +1,19 @@
 services:
   nginx:
     image: nginx:alpine
-    container_name: be.wouterds.nuc--nginx
+    container_name: com.wouterds.nuc--nginx
     mem_limit: 32mb
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=proxy"
-      - "traefik.http.middlewares.bewouterdsnuc.redirectscheme.scheme=https"
-      - "traefik.http.routers.bewouterdsnuc-http.rule=Host(`nuc.wouterds.be`)"
-      - "traefik.http.routers.bewouterdsnuc-http.entrypoints=web"
-      - "traefik.http.routers.bewouterdsnuc-http.middlewares=bewouterdsnuc"
-      - "traefik.http.routers.bewouterdsnuc.rule=Host(`nuc.wouterds.be`)"
-      - "traefik.http.routers.bewouterdsnuc.entrypoints=websecure"
-      - "traefik.http.routers.bewouterdsnuc.tls.certresolver=myhttpchallenge"
+      - "traefik.http.middlewares.comwouterdsnuc.redirectscheme.scheme=https"
+      - "traefik.http.routers.comwouterdsnuc-http.rule=Host(`nuc.wouterds.com`)"
+      - "traefik.http.routers.comwouterdsnuc-http.entrypoints=web"
+      - "traefik.http.routers.comwouterdsnuc-http.middlewares=comwouterdsnuc"
+      - "traefik.http.routers.comwouterdsnuc.rule=Host(`nuc.wouterds.com`)"
+      - "traefik.http.routers.comwouterdsnuc.entrypoints=websecure"
+      - "traefik.http.routers.comwouterdsnuc.tls.certresolver=myhttpchallenge"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
       - ./stats.js:/etc/nginx/stats.js:ro
@@ -22,9 +22,9 @@ services:
       - nuc
 
   node:
-    image: ghcr.io/wouterds/nuc.wouterds.be
+    image: ghcr.io/wouterds/nuc.wouterds.com
     mem_limit: 128mb
-    container_name: be.wouterds.nuc--node
+    container_name: com.wouterds.nuc--node
     restart: unless-stopped
     env_file: .env
     networks:
@@ -32,7 +32,7 @@ services:
 
   glances:
     image: nicolargo/glances
-    container_name: be.wouterds.nuc--glances
+    container_name: com.wouterds.nuc--glances
     mem_limit: 128mb
     restart: unless-stopped
     pid: host
