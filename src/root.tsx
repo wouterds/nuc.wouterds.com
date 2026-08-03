@@ -1,7 +1,14 @@
 import "./tailwind.css";
 
-import type { LinksFunction, LoaderFunctionArgs } from "@remix-run/node";
-import { Links, Meta, Outlet, Scripts, useLoaderData } from "@remix-run/react";
+import {
+  Links,
+  type LinksFunction,
+  type LoaderFunctionArgs,
+  Meta,
+  Outlet,
+  Scripts,
+  useLoaderData,
+} from "react-router";
 
 import Footer from "./components/footer";
 import Header from "./components/header";

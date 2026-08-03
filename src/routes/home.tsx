@@ -1,6 +1,5 @@
-import type { MetaFunction } from "@remix-run/node";
-import { useLoaderData, useRevalidator } from "@remix-run/react";
 import { useEffect } from "react";
+import { type MetaFunction, useLoaderData, useRevalidator } from "react-router";
 
 import Progress from "~/components/progress";
 
