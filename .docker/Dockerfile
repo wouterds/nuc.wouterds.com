@@ -8,19 +8,16 @@ RUN npm ci
 
 FROM deps AS prod-deps
 
-RUN npm prune --production
+RUN npm prune --omit=dev
 
 FROM deps AS build
 
 COPY . .
-COPY --from=deps /code/node_modules ./node_modules
-COPY --from=deps /code/package.json ./package.json
 RUN npm run build
 
 FROM base AS runtime
 WORKDIR /code
 
-RUN apk update
 RUN apk add --no-cache libc6-compat dumb-init
 
 COPY --chown=node:node --from=build /code/build ./build
@@ -37,4 +34,5 @@ ENV NODE_ENV=production
 USER node
 EXPOSE $PORT
 
-CMD ["dumb-init", "npm", "run", "start"]
+ENTRYPOINT ["dumb-init", "--"]
+CMD ["npm", "run", "start"]

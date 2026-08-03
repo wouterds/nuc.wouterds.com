@@ -1,1 +1,11 @@
+.git
+.github
+.vscode
+.docker
+.DS_Store
+*.log
 node_modules
+build
+.react-router
+.cache
+.env*
