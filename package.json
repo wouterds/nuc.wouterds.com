@@ -15,8 +15,8 @@
     "@react-router/node": "^7.18.2",
     "@react-router/serve": "^7.18.2",
     "isbot": "^5.1.17",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
     "react-router": "^7.18.2"
   },
   "devDependencies": {
@@ -24,8 +24,8 @@
     "@commitlint/cli": "^21.2.1",
     "@commitlint/config-conventional": "^21.2.0",
     "@react-router/dev": "^7.18.2",
-    "@types/react": "^18.3.11",
-    "@types/react-dom": "^18.3.1",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
     "autoprefixer": "^10.4.19",
     "lefthook": "^2.1.10",
     "postcss": "^8.4.38",
