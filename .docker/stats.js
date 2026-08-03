@@ -1,40 +1,53 @@
-export default (r) => {
-  r.subrequest('/glances/api/4/all', { method: 'GET' }, (res) => {
-    if (res.status !== 200) {
-      r.return(res.status, res.responseBody);
+const PLUGINS = ["cpu", "mem", "sensors", "fs"];
+const DISKS = ["/mnt/disk1", "/mnt/disk2"];
+
+const sensorValue = (sensors, label) => {
+  const sensor = sensors.find((entry) => entry.label === label);
+
+  return sensor ? sensor.value : null;
+};
+
+export default async (r) => {
+  try {
+    const responses = await Promise.all(
+      PLUGINS.map((plugin) => r.subrequest(`/glances/api/4/${plugin}`, { method: "GET" })),
+    );
+
+    const failed = responses.find((res) => res.status !== 200);
+    if (failed) {
+      r.return(failed.status, failed.responseBody);
       return;
     }
 
-    try {
-      const data = JSON.parse(res.responseText);
+    // njs has no destructuring, so key the parsed payloads by plugin name.
+    const data = {};
+    PLUGINS.forEach((plugin, index) => {
+      data[plugin] = JSON.parse(responses[index].responseText);
+    });
 
-      const cpu = {
-        usage: data.cpu.total,
-        temp: data.sensors.find(sensor => sensor.label === 'Package id 0').value,
-      };
-
-      const memory = data.mem;
-
-      const disk = data.fs.reduce((acc, entry) => {
-        if (['/mnt/disk2', '/mnt/disk1'].includes(entry.mnt_point)) {
+    const disk = data.fs.reduce(
+      (acc, entry) => {
+        if (DISKS.includes(entry.mnt_point)) {
           acc.size += entry.size;
           acc.used += entry.used;
         }
         return acc;
-      }, { size: 0, used: 0, percent: 0 });
+      },
+      { size: 0, used: 0 },
+    );
 
-      disk.percent = Math.round((disk.used / disk.size) * 10000) / 100;
-
-      r.headersOut['Content-Type'] = 'application/json';
-      r.return(200, JSON.stringify({
-        cpu: cpu.usage,
-        cpu_temp: cpu.temp,
-        memory: memory.percent,
-        disk: disk.percent,
-      }));
-    } catch (e) {
-      r.error(`Error processing response: ${e}`);
-      r.return(500, `Error processing response: ${e}`);
-    }
-  });
+    r.headersOut["Content-Type"] = "application/json";
+    r.return(
+      200,
+      JSON.stringify({
+        cpu: data.cpu.total,
+        cpu_temp: sensorValue(data.sensors, "Package id 0"),
+        memory: data.mem.percent,
+        disk: Math.round((disk.used / disk.size) * 10000) / 100,
+      }),
+    );
+  } catch (e) {
+    r.error(`Error processing response: ${e}`);
+    r.return(500, `Error processing response: ${e}`);
+  }
 };
