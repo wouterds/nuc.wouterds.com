@@ -1,9 +1,10 @@
 import { useEffect } from "react";
-import { type MetaFunction, useLoaderData, useRevalidator } from "react-router";
+import { useRevalidator } from "react-router";
 
 import Progress from "~/components/progress";
+import type { Route } from "./+types/home";
 
-export const meta: MetaFunction = () => {
+export const meta: Route.MetaFunction = () => {
   return [{ title: "nuc.wouterds.com" }];
 };
 
@@ -21,8 +22,7 @@ export const loader = async () => {
   return data;
 };
 
-export default function Index() {
-  const data = useLoaderData<typeof loader>();
+export default function Index({ loaderData }: Route.ComponentProps) {
   const { revalidate, state } = useRevalidator();
 
   useEffect(() => {
@@ -38,10 +38,10 @@ export default function Index() {
   return (
     <div className="font-mono text-xs">
       <div className="flex flex-col gap-2">
-        <Progress label="CPU temp" progress={data.cpu_temp} unit="ºC" />
-        <Progress label="CPU usage" progress={data.cpu} />
-        <Progress label="Memory usage" progress={data.memory} />
-        <Progress label="Disk usage" progress={data.disk} />
+        <Progress label="CPU temp" progress={loaderData.cpu_temp} unit="ºC" />
+        <Progress label="CPU usage" progress={loaderData.cpu} />
+        <Progress label="Memory usage" progress={loaderData.memory} />
+        <Progress label="Disk usage" progress={loaderData.disk} />
       </div>
     </div>
   );

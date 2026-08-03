@@ -1,19 +1,11 @@
 import "./tailwind.css";
 
-import {
-  Links,
-  type LinksFunction,
-  type LoaderFunctionArgs,
-  Meta,
-  Outlet,
-  Scripts,
-  useLoaderData,
-} from "react-router";
-
+import { Links, Meta, Outlet, Scripts } from "react-router";
+import type { Route } from "./+types/root";
 import Footer from "./components/footer";
 import Header from "./components/header";
 
-export const links: LinksFunction = () => [
+export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
   {
     rel: "preconnect",
@@ -26,14 +18,14 @@ export const links: LinksFunction = () => [
   },
 ];
 
-export const loader = async ({ request }: LoaderFunctionArgs) => {
+export const loader = async ({ request }: Route.LoaderArgs) => {
   return {
     ray: request.headers.get("cf-ray"),
   };
 };
 
-const App = () => {
-  const { ray } = useLoaderData<typeof loader>();
+const App = ({ loaderData }: Route.ComponentProps) => {
+  const { ray } = loaderData;
 
   return (
     <html lang="en">
