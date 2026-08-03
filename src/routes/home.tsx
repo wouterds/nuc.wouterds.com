@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useRevalidator } from "react-router";
 
 import Progress from "~/components/progress";
+import Stat from "~/components/stat";
 import type { Route } from "./+types/home";
 
 export const meta: Route.MetaFunction = () => {
@@ -13,9 +14,15 @@ export const loader = async () => {
     (res) =>
       res.json() as Promise<{
         cpu: number;
-        cpu_temp: number;
+        cpu_temp: number | null;
+        nvme_temp: number | null;
         memory: number;
         disk: number;
+        uptime: string;
+        download: number;
+        upload: number;
+        processes: number;
+        threads: number;
       }>,
   );
 
@@ -35,13 +42,22 @@ export default function Index({ loaderData }: Route.ComponentProps) {
     }
   }, [state, revalidate]);
 
+  const { cpu_temp, nvme_temp, download, upload, processes, threads, uptime } = loaderData;
+
   return (
-    <div className="font-mono text-xs">
+    <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-2">
-        <Progress label="CPU temp" progress={loaderData.cpu_temp} unit="ºC" />
+        {cpu_temp !== null && <Progress label="CPU temp" progress={cpu_temp} unit="ºC" />}
         <Progress label="CPU usage" progress={loaderData.cpu} />
         <Progress label="Memory usage" progress={loaderData.memory} />
         <Progress label="Disk usage" progress={loaderData.disk} />
+        {nvme_temp !== null && <Progress label="NVMe temp" progress={nvme_temp} unit="ºC" />}
+      </div>
+
+      <div className="flex flex-col gap-1 border-t border-dashed border-zinc-300 pt-3 dark:border-zinc-700">
+        <Stat label="Network" value={`↓ ${download.toFixed(2)} ↑ ${upload.toFixed(2)} Mbps`} />
+        <Stat label="Processes" value={`${processes} / ${threads} threads`} />
+        <Stat label="Uptime" value={uptime} />
       </div>
     </div>
   );
