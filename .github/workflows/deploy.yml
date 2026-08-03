@@ -79,7 +79,7 @@ jobs:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
       - run: |
           echo "Host ${{ env.HOST }}" >> ~/.ssh/config
-          echo "  ProxyCommand $(which cloudflared) access ssh --hostname %h" >> ~/.ssh/config
+          echo "  ProxyCommand $(which cloudflared) access ssh --hostname %h/ssh" >> ~/.ssh/config
           echo "  StrictHostKeyChecking no" >> ~/.ssh/config
           chmod 600 ~/.ssh/config
       - run: |
