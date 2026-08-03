@@ -3,7 +3,14 @@ name: code-review
 on:
   push:
     branches: ['**']
-    paths: [src/**, package.json]
+    paths:
+      - .github/workflows/code-review.yml
+      - src/**
+      - '*.config.ts'
+      - biome.json
+      - tsconfig.json
+      - package.json
+      - package-lock.json
   workflow_dispatch:
 
 concurrency:

@@ -7,7 +7,14 @@ permissions:
 on:
   push:
     branches: main
-    paths: [src/**, package-lock.json]
+    paths:
+      - .github/workflows/deploy.yml
+      - .docker/**
+      - src/**
+      - '*.config.ts'
+      - tsconfig.json
+      - package.json
+      - package-lock.json
   workflow_dispatch:
 
 concurrency:
