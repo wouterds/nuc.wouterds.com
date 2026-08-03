@@ -1,11 +1,11 @@
-import type { MetaFunction } from '@remix-run/node';
-import { useLoaderData, useRevalidator } from '@remix-run/react';
-import { useEffect } from 'react';
+import type { MetaFunction } from "@remix-run/node";
+import { useLoaderData, useRevalidator } from "@remix-run/react";
+import { useEffect } from "react";
 
-import Progress from '~/components/progress';
+import Progress from "~/components/progress";
 
 export const meta: MetaFunction = () => {
-  return [{ title: 'nuc.wouterds.com' }];
+  return [{ title: "nuc.wouterds.com" }];
 };
 
 export const loader = async () => {
@@ -27,7 +27,7 @@ export default function Index() {
   const { revalidate, state } = useRevalidator();
 
   useEffect(() => {
-    if (state !== 'loading') {
+    if (state !== "loading") {
       const timeout = setTimeout(() => {
         revalidate();
       }, 1000);

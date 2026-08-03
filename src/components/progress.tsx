@@ -5,11 +5,11 @@ type Props = {
   unit?: string;
 };
 
-const filledChar = '█';
-const emptyChar = '░';
+const filledChar = "█";
+const emptyChar = "░";
 const width = 36;
 
-const Progress = ({ progress, label, unit = '%' }: Props) => {
+const Progress = ({ progress, label, unit = "%" }: Props) => {
   const filledWidth = Math.round((progress / 100) * width);
   const emptyWidth = width - filledWidth;
 

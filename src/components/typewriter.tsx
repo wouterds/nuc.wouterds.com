@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 
 type Props = {
   children: string;
@@ -8,13 +8,13 @@ type Props = {
 
 const Typewriter = ({ children, interval, delay }: Props) => {
   const [blinkingBlock, setBlinkingBlock] = useState(false);
-  const [currentText, setCurrentText] = useState('');
+  const [currentText, setCurrentText] = useState("");
   const [currentIndex, setCurrentIndex] = useState(0);
   const [started, setStarted] = useState(false);
   const [ended, setEnded] = useState(false);
 
   useEffect(() => {
-    setCurrentText('');
+    setCurrentText("");
     setCurrentIndex(0);
     setEnded(false);
   }, [children]);
@@ -62,7 +62,7 @@ const Typewriter = ({ children, interval, delay }: Props) => {
   return (
     <span className="relative">
       {currentText}
-      {!ended && (blinkingBlock || started) && '█'}
+      {!ended && (blinkingBlock || started) && "█"}
     </span>
   );
 };

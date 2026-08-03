@@ -1,4 +1,4 @@
-import Typewriter from './typewriter';
+import Typewriter from "./typewriter";
 
 type Props = {
   ray?: string | null;
