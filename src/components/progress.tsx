@@ -10,7 +10,9 @@ const emptyChar = "░";
 const width = 36;
 
 const Progress = ({ progress, label, unit = "%" }: Props) => {
-  const filledWidth = Math.round((progress / 100) * width);
+  // Temperatures are fed in as-is and this box idles in the 90s, so a reading
+  // over 100 would otherwise ask for a negative amount of empty track and throw.
+  const filledWidth = Math.min(Math.max(Math.round((progress / 100) * width), 0), width);
   const emptyWidth = width - filledWidth;
 
   return (
