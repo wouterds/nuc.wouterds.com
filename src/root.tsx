@@ -1,6 +1,6 @@
 import "./tailwind.css";
 
-import { Links, Meta, Outlet, Scripts } from "react-router";
+import { Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
 import type { Route } from "./+types/root";
 import Footer from "./components/footer";
 import Header from "./components/header";
@@ -43,7 +43,7 @@ const App = ({ loaderData }: Route.ComponentProps) => {
           </main>
           <Footer ray={ray} />
         </div>
-        {/* <ScrollRestoration /> */}
+        <ScrollRestoration />
         <Scripts />
       </body>
     </html>
