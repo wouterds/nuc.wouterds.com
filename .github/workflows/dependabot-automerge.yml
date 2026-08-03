@@ -1,0 +1,29 @@
+# Dependabot PRs are already gated by the required checks on main (linting,
+# typecheck), so once those pass there is nothing left to do by hand. This flags
+# patch and minor Dependabot PRs for GitHub's native auto-merge, which merge-commits
+# when checks pass. Major bumps are excluded and stay open for human review.
+# Note: merges enabled via GITHUB_TOKEN don't trigger downstream workflows, so
+# deploy does not run for these merges - it catches up on the next human push.
+name: dependabot-automerge
+
+permissions:
+  contents: write
+  pull-requests: write
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  automerge:
+    if: github.actor == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: dependabot/fetch-metadata@v3
+        id: metadata
+      - if: steps.metadata.outputs.update-type != 'version-update:semver-major'
+        run: gh pr merge --auto --merge "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
