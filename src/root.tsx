@@ -35,7 +35,10 @@ export const Layout = ({ children }: { children: React.ReactNode }) => (
       <Links />
     </head>
     <body>
-      <div className="mx-auto max-w-readout">{children}</div>
+      {/* Sized to the widest row rather than a computed width: a gauge row is
+          always the widest thing here, so the stat values below line up with
+          the gauge readings without anyone having to do the arithmetic. */}
+      <div className="mx-auto w-fit">{children}</div>
       <ScrollRestoration />
       <Scripts />
     </body>

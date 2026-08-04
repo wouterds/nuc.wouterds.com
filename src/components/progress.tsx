@@ -33,7 +33,13 @@ const Progress = ({ progress, label, unit = "%", value }: Props) => {
         <span className="text-zinc-900 dark:text-zinc-100 tracking-wider" aria-hidden="true">
           {filledChar.repeat(filledWidth) + emptyChar.repeat(emptyWidth)}
         </span>
-        <span className="ml-2 text-zinc-600 dark:text-zinc-400" aria-hidden="true">
+        {/* Pinned so every gauge row is the same width whatever the reading
+            says, otherwise the container would resize on each poll as values
+            move between "9.5%" and "42.61%". */}
+        <span
+          className="ml-2 min-w-[6ch] whitespace-nowrap text-zinc-600 dark:text-zinc-400"
+          aria-hidden="true"
+        >
           {text}
         </span>
       </div>
