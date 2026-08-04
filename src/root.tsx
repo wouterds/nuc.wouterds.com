@@ -35,7 +35,7 @@ export const Layout = ({ children }: { children: React.ReactNode }) => (
       <Links />
     </head>
     <body>
-      <div className="mx-auto max-w-sm">{children}</div>
+      <div className="mx-auto max-w-readout">{children}</div>
       <ScrollRestoration />
       <Scripts />
     </body>
