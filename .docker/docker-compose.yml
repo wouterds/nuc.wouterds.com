@@ -17,6 +17,8 @@ services:
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
       - ./stats.js:/etc/nginx/stats.js:ro
+      # Served read-only at /downloads; drop files in on the host side.
+      - ./downloads:/srv/downloads:ro
       # stats.js reads pid 1's net/dev out of this to get the host interface
       # rather than its own veth.
       - /proc:/host/proc:ro

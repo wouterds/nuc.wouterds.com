@@ -83,7 +83,7 @@ jobs:
           echo "  StrictHostKeyChecking no" >> ~/.ssh/config
           chmod 600 ~/.ssh/config
       - run: |
-          ssh ${{ env.USER }}@${{ env.HOST }} "mkdir -p ${{ env.DIRECTORY }}"
+          ssh ${{ env.USER }}@${{ env.HOST }} "mkdir -p ${{ env.DIRECTORY }}/downloads"
           scp .docker/nginx.conf ${{ env.USER }}@${{ env.HOST }}:${{ env.DIRECTORY }}/nginx.conf
           scp .docker/stats.js ${{ env.USER }}@${{ env.HOST }}:${{ env.DIRECTORY }}/stats.js
           scp .docker/docker-compose.yml ${{ env.USER }}@${{ env.HOST }}:${{ env.DIRECTORY }}/docker-compose.yml
