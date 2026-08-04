@@ -1,6 +1,5 @@
 type Props = {
   progress: number;
-  width?: number;
   label?: string;
   unit?: string;
 };
