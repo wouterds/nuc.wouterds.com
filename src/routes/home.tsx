@@ -45,6 +45,8 @@ export const loader = async () => {
     upload: number;
     downloaded: number;
     uploaded: number;
+    power: number | null;
+    power_peak: number | null;
     processes: number;
     threads: number;
   };
@@ -64,7 +66,7 @@ export default function Index({ loaderData }: Route.ComponentProps) {
   }, [state, revalidate]);
 
   const { cpu_temp, nvme_temp, download, upload, downloaded, uploaded } = loaderData;
-  const { processes, threads, uptime } = loaderData;
+  const { power, power_peak, processes, threads, uptime } = loaderData;
 
   return (
     <div className="flex flex-col gap-6">
@@ -74,6 +76,13 @@ export default function Index({ loaderData }: Route.ComponentProps) {
         <Progress label="Memory usage" progress={loaderData.memory} />
         <Progress label="Disk usage" progress={loaderData.disk} />
         {nvme_temp !== null && <Progress label="NVMe temp" progress={nvme_temp} unit="ºC" />}
+        {power !== null && power_peak !== null && (
+          <Progress
+            label="Power draw"
+            progress={(power / power_peak) * 100}
+            value={`${power >= 100 ? power.toFixed(0) : power.toFixed(1)} W`}
+          />
+        )}
       </div>
 
       <div className="flex flex-col gap-1 border-t border-dashed border-zinc-300 pt-3 dark:border-zinc-700">

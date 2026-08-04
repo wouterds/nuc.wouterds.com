@@ -2,18 +2,21 @@ type Props = {
   progress: number;
   label?: string;
   unit?: string;
+  // For gauges whose reading is not what fills the track, like power drawn
+  // against the highest draw seen so far.
+  value?: string;
 };
 
 const filledChar = "█";
 const emptyChar = "░";
 const width = 36;
 
-const Progress = ({ progress, label, unit = "%" }: Props) => {
+const Progress = ({ progress, label, unit = "%", value }: Props) => {
   // Temperatures are fed in as-is and this box idles in the 90s, so a reading
   // over 100 would otherwise ask for a negative amount of empty track and throw.
   const filledWidth = Math.min(Math.max(Math.round((progress / 100) * width), 0), width);
   const emptyWidth = width - filledWidth;
-  const text = `${progress}${unit}`;
+  const text = value ?? `${progress}${unit}`;
 
   return (
     <div className="text-xs">
