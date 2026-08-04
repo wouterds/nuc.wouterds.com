@@ -24,25 +24,28 @@ const formatBytes = (bytes: number) => {
 };
 
 export const loader = async () => {
-  const data = await fetch(process.env.API_URL!).then(
-    (res) =>
-      res.json() as Promise<{
-        cpu: number;
-        cpu_temp: number | null;
-        nvme_temp: number | null;
-        memory: number;
-        disk: number;
-        uptime: string;
-        download: number;
-        upload: number;
-        downloaded: number;
-        uploaded: number;
-        processes: number;
-        threads: number;
-      }>,
-  );
+  const response = await fetch(process.env.API_URL!);
 
-  return data;
+  // Without this a non-200 falls through to res.json(), which chokes on the
+  // error body and surfaces a parser error instead of what actually went wrong.
+  if (!response.ok) {
+    throw new Error(`Stats api responded ${response.status}`);
+  }
+
+  return (await response.json()) as {
+    cpu: number;
+    cpu_temp: number | null;
+    nvme_temp: number | null;
+    memory: number;
+    disk: number;
+    uptime: string;
+    download: number;
+    upload: number;
+    downloaded: number;
+    uploaded: number;
+    processes: number;
+    threads: number;
+  };
 };
 
 export default function Index({ loaderData }: Route.ComponentProps) {
