@@ -24,7 +24,9 @@ const formatBytes = (bytes: number) => {
 };
 
 export const loader = async () => {
-  const response = await fetch(process.env.API_URL!);
+  // The page polls faster than once a second, so a hung upstream would stack
+  // requests up behind each other rather than ever failing.
+  const response = await fetch(process.env.API_URL!, { signal: AbortSignal.timeout(2000) });
 
   // Without this a non-200 falls through to res.json(), which chokes on the
   // error body and surfaces a parser error instead of what actually went wrong.
