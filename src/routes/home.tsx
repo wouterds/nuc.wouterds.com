@@ -57,7 +57,7 @@ export default function Index({ loaderData }: Route.ComponentProps) {
     if (state !== "loading") {
       const timeout = setTimeout(() => {
         revalidate();
-      }, 1000);
+      }, 900);
 
       return () => clearTimeout(timeout);
     }
