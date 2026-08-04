@@ -1,6 +1,14 @@
-const PLUGINS = ["cpu", "mem", "sensors", "fs", "uptime", "network", "processcount"];
+// biome-ignore lint/style/useNodejsImportProtocol: njs is not node, there is no node: prefix
+import fs from "fs";
+
+const PLUGINS = ["cpu", "mem", "sensors", "fs", "uptime", "processcount"];
 const DISKS = ["/mnt/disk1", "/mnt/disk2"];
-const INTERFACE = "eth0";
+const INTERFACE = "enp87s0";
+
+// /proc/net is scoped to the reading process's network namespace, and nginx has
+// its own, so its /proc/net/dev only ever describes a veth carrying the poll
+// traffic itself. Pid 1 in the mounted host /proc sits in the host namespace.
+const NET_DEV = "/host/proc/1/net/dev";
 
 const sensorValue = (sensors, label) => {
   const sensor = sensors.find((entry) => entry.label === label);
@@ -9,6 +17,45 @@ const sensorValue = (sensors, label) => {
 };
 
 const toMbps = (bytesPerSecond) => Math.round((bytesPerSecond * 8) / 1000) / 1000;
+
+const readInterface = () => {
+  const line = fs
+    .readFileSync(NET_DEV, "utf8")
+    .split("\n")
+    .find((entry) => entry.trim().indexOf(`${INTERFACE}:`) === 0);
+
+  if (!line) {
+    return null;
+  }
+
+  const columns = line.trim().split(/\s+/);
+
+  return { received: Number(columns[1]), sent: Number(columns[9]) };
+};
+
+// Counters are cumulative, so throughput is the delta against the last poll.
+// A reboot or interface reset rewinds them, hence the floor at zero.
+const throughput = (counters) => {
+  const now = Date.now();
+  const previous = ngx.shared.network.get("sample");
+  ngx.shared.network.set("sample", `${now}:${counters.received}:${counters.sent}`);
+
+  if (!previous) {
+    return { download: 0, upload: 0 };
+  }
+
+  const parts = previous.split(":");
+  const seconds = (now - Number(parts[0])) / 1000;
+
+  if (seconds <= 0) {
+    return { download: 0, upload: 0 };
+  }
+
+  return {
+    download: toMbps(Math.max(counters.received - Number(parts[1]), 0) / seconds),
+    upload: toMbps(Math.max(counters.sent - Number(parts[2]), 0) / seconds),
+  };
+};
 
 export default async (r) => {
   try {
@@ -39,7 +86,8 @@ export default async (r) => {
       { size: 0, used: 0 },
     );
 
-    const nic = data.network.find((entry) => entry.interface_name === INTERFACE);
+    const counters = readInterface();
+    const rates = counters ? throughput(counters) : { download: 0, upload: 0 };
 
     r.headersOut["Content-Type"] = "application/json";
     r.return(
@@ -51,8 +99,10 @@ export default async (r) => {
         memory: data.mem.percent,
         disk: Math.round((disk.used / disk.size) * 10000) / 100,
         uptime: data.uptime,
-        download: nic ? toMbps(nic.bytes_recv_rate_per_sec) : 0,
-        upload: nic ? toMbps(nic.bytes_sent_rate_per_sec) : 0,
+        download: rates.download,
+        upload: rates.upload,
+        downloaded: counters ? counters.received : 0,
+        uploaded: counters ? counters.sent : 0,
         processes: data.processcount.total,
         threads: data.processcount.thread,
       }),
