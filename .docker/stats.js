@@ -10,6 +10,11 @@ const INTERFACE = "enp87s0";
 // traffic itself. Pid 1 in the mounted host /proc sits in the host namespace.
 const NET_DEV = "/host/proc/1/net/dev";
 
+// Where the power gauge starts its scale. It only ever ratchets up from here,
+// but without a floor the first reading after a restart would become the peak
+// and an idle box would show a full bar.
+const POWER_FLOOR_W = 100;
+
 const sensorValue = (sensors, label) => {
   const sensor = sensors.find((entry) => entry.label === label);
 
@@ -57,6 +62,48 @@ const throughput = (counters) => {
   };
 };
 
+// Cached rather than fetched per poll, and any failure reads as "no meter"
+// instead of taking the whole response down with it.
+const readPower = async (r) => {
+  const cached = ngx.shared.meter.get("power");
+
+  if (cached !== undefined) {
+    return cached === "" ? null : Number(cached);
+  }
+
+  let watts = null;
+
+  try {
+    const response = await r.subrequest("/internal-meter", { method: "GET" });
+
+    if (response.status === 200) {
+      const reading = JSON.parse(response.responseText).active_power_w;
+      if (typeof reading === "number") {
+        watts = Math.round(reading * 10) / 10;
+      }
+    }
+  } catch (e) {
+    r.error(`Could not read the meter: ${e}`);
+  }
+
+  ngx.shared.meter.set("power", watts === null ? "" : String(watts));
+
+  return watts;
+};
+
+// The gauge scales against the highest draw seen rather than a made-up
+// ceiling, so it stretches the first time the box pulls harder than it ever has.
+const powerPeak = (watts) => {
+  const stored = Number(ngx.shared.peaks.get("power") || 0);
+  const peak = Math.max(stored, watts === null ? 0 : watts, POWER_FLOOR_W);
+
+  if (peak !== stored) {
+    ngx.shared.peaks.set("power", String(peak));
+  }
+
+  return peak;
+};
+
 export default async (r) => {
   try {
     const responses = await Promise.all(
@@ -88,6 +135,7 @@ export default async (r) => {
 
     const counters = readInterface();
     const rates = counters ? throughput(counters) : { download: 0, upload: 0 };
+    const power = await readPower(r);
 
     r.headersOut["Content-Type"] = "application/json";
     r.return(
@@ -103,6 +151,8 @@ export default async (r) => {
         upload: rates.upload,
         downloaded: counters ? counters.received : 0,
         uploaded: counters ? counters.sent : 0,
+        power,
+        power_peak: power === null ? null : powerPeak(power),
         processes: data.processcount.total,
         threads: data.processcount.thread,
       }),
