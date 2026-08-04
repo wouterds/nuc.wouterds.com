@@ -80,7 +80,7 @@ export default function Index({ loaderData }: Route.ComponentProps) {
           <Progress
             label="Power draw"
             progress={(power / power_peak) * 100}
-            value={`${power.toFixed(1)} W`}
+            value={`${power >= 100 ? power.toFixed(0) : power.toFixed(1)} W`}
           />
         )}
       </div>
