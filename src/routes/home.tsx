@@ -76,7 +76,9 @@ export default function Index({ loaderData }: Route.ComponentProps) {
         <Progress label="Memory usage" progress={loaderData.memory} />
         <Progress label="Disk usage" progress={loaderData.disk} />
         {nvme_temp !== null && <Progress label="NVMe temp" progress={nvme_temp} unit="ºC" />}
-        {power !== null && power_peak !== null && (
+        {/* Peak is whatever the meter has reported, so it is only zero before
+            a single reading has landed - which would divide the track by zero. */}
+        {power !== null && power_peak !== null && power_peak > 0 && (
           <Progress
             label="Power draw"
             progress={(power / power_peak) * 100}

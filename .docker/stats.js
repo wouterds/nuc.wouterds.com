@@ -10,11 +10,6 @@ const INTERFACE = "enp87s0";
 // traffic itself. Pid 1 in the mounted host /proc sits in the host namespace.
 const NET_DEV = "/host/proc/1/net/dev";
 
-// Where the power gauge starts its scale. It only ever ratchets up from here,
-// but without a floor the first reading after a restart would become the peak
-// and an idle box would show a full bar.
-const POWER_FLOOR_W = 100;
-
 const sensorValue = (sensors, label) => {
   const sensor = sensors.find((entry) => entry.label === label);
 
@@ -91,11 +86,12 @@ const readPower = async (r) => {
   return watts;
 };
 
-// The gauge scales against the highest draw seen rather than a made-up
-// ceiling, so it stretches the first time the box pulls harder than it ever has.
+// The scale is nothing but what the meter has actually reported: the first
+// reading sets it and every higher one stretches it. Nginx holds this in
+// memory, so a restart starts the observation over.
 const powerPeak = (watts) => {
   const stored = Number(ngx.shared.peaks.get("power") || 0);
-  const peak = Math.max(stored, watts === null ? 0 : watts, POWER_FLOOR_W);
+  const peak = Math.max(stored, watts);
 
   if (peak !== stored) {
     ngx.shared.peaks.set("power", String(peak));
