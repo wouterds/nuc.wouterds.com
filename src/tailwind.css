@@ -4,8 +4,9 @@
   /* The width of one readout row, so the stat values below the gauges end on
      the same column as the gauge readings: 36 track cells plus the 0.05em
      tracking-wider adds to each, the ml-2 gap, and room for the widest
-     reading (100.0%). */
-  --container-readout: calc(42ch + 1.8em + 0.5rem);
+     reading. That is 7 characters once the draw goes past 100 W and keeps its
+     decimal ("118.5 W"), which is one wider than "100.0%". */
+  --container-readout: calc(43ch + 1.8em + 0.5rem);
 }
 
 html,
