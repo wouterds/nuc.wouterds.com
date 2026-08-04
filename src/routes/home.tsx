@@ -9,6 +9,20 @@ export const meta: Route.MetaFunction = () => {
   return [{ title: "nuc.wouterds.com" }];
 };
 
+const units = ["B", "KB", "MB", "GB", "TB", "PB"];
+
+const formatBytes = (bytes: number) => {
+  let value = bytes;
+  let unit = 0;
+
+  while (value >= 1024 && unit < units.length - 1) {
+    value /= 1024;
+    unit++;
+  }
+
+  return `${value.toFixed(unit === 0 ? 0 : 1)} ${units[unit]}`;
+};
+
 export const loader = async () => {
   const data = await fetch(process.env.API_URL!).then(
     (res) =>
@@ -21,6 +35,8 @@ export const loader = async () => {
         uptime: string;
         download: number;
         upload: number;
+        downloaded: number;
+        uploaded: number;
         processes: number;
         threads: number;
       }>,
@@ -42,7 +58,8 @@ export default function Index({ loaderData }: Route.ComponentProps) {
     }
   }, [state, revalidate]);
 
-  const { cpu_temp, nvme_temp, download, upload, processes, threads, uptime } = loaderData;
+  const { cpu_temp, nvme_temp, download, upload, downloaded, uploaded } = loaderData;
+  const { processes, threads, uptime } = loaderData;
 
   return (
     <div className="flex flex-col gap-6">
@@ -56,6 +73,10 @@ export default function Index({ loaderData }: Route.ComponentProps) {
 
       <div className="flex flex-col gap-1 border-t border-dashed border-zinc-300 pt-3 dark:border-zinc-700">
         <Stat label="Network" value={`↓ ${download.toFixed(2)} ↑ ${upload.toFixed(2)} Mbps`} />
+        <Stat
+          label="Transferred"
+          value={`↓ ${formatBytes(downloaded)} ↑ ${formatBytes(uploaded)}`}
+        />
         <Stat label="Processes" value={`${processes} / ${threads} threads`} />
         <Stat label="Uptime" value={uptime} />
       </div>
