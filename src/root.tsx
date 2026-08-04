@@ -11,6 +11,12 @@ export const loader = async ({ request }: Route.LoaderArgs) => {
   };
 };
 
+// Cloudflare stamps a new ray on every request, so letting this loader run
+// again on the once-a-second poll would hand the footer a different id each
+// time and restart the typewriter mid-word. The ray identifies the page load,
+// not the poll, so it is read once and kept.
+export const shouldRevalidate = () => false;
+
 const App = ({ loaderData }: Route.ComponentProps) => {
   const { ray } = loaderData;
 
