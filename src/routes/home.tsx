@@ -88,7 +88,10 @@ export default function Index({ loaderData }: Route.ComponentProps) {
       </div>
 
       <div className="flex flex-col gap-1 border-t border-dashed border-zinc-300 pt-3 dark:border-zinc-700">
-        <Stat label="Network" value={`↓ ${download.toFixed(2)} ↑ ${upload.toFixed(2)} Mbps`} />
+        <Stat
+          label="Network"
+          value={`↓ ${download.toFixed(2)} Mbps ↑ ${upload.toFixed(2)} Mbps`}
+        />
         <Stat
           label="Transferred"
           value={`↓ ${formatBytes(downloaded)} ↑ ${formatBytes(uploaded)}`}
