@@ -3,6 +3,7 @@ import { useRevalidator } from "react-router";
 
 import Progress from "~/components/progress";
 import Stat from "~/components/stat";
+import Uptime from "~/components/uptime";
 import type { Route } from "./+types/home";
 
 export const meta: Route.MetaFunction = () => {
@@ -88,16 +89,13 @@ export default function Index({ loaderData }: Route.ComponentProps) {
       </div>
 
       <div className="flex flex-col gap-1 border-t border-dashed border-zinc-300 pt-3 dark:border-zinc-700">
-        <Stat
-          label="Network"
-          value={`↓ ${download.toFixed(2)} Mbps ↑ ${upload.toFixed(2)} Mbps`}
-        />
+        <Stat label="Network" value={`↓ ${download.toFixed(2)} Mbps ↑ ${upload.toFixed(2)} Mbps`} />
         <Stat
           label="Transferred"
           value={`↓ ${formatBytes(downloaded)} ↑ ${formatBytes(uploaded)}`}
         />
         <Stat label="Processes" value={`${processes} / ${threads} threads`} />
-        <Stat label="Uptime" value={uptime} />
+        <Uptime uptime={uptime} />
       </div>
     </div>
   );
