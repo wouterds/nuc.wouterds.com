@@ -32,7 +32,7 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: npm
-      - uses: anthropics/claude-code-action@v1.0.183
+      - uses: anthropics/claude-code-action@v1.0.186
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           additional_permissions: |
