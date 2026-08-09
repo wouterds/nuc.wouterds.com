@@ -25,8 +25,8 @@ const formatBytes = (bytes: number) => {
 };
 
 export const loader = async () => {
-  // The page polls faster than once a second, so a hung upstream would stack
-  // requests up behind each other rather than ever failing.
+  // The page polls once a second, so a hung upstream would stack requests up
+  // behind each other rather than ever failing.
   const response = await fetch(process.env.API_URL!, { signal: AbortSignal.timeout(2000) });
 
   // Without this a non-200 falls through to res.json(), which chokes on the
@@ -60,7 +60,7 @@ export default function Index({ loaderData }: Route.ComponentProps) {
     if (state !== "loading") {
       const timeout = setTimeout(() => {
         revalidate();
-      }, 900);
+      }, 1000);
 
       return () => clearTimeout(timeout);
     }
