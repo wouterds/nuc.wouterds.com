@@ -28,7 +28,7 @@
     "@tailwindcss/vite": "^4.3.3",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
-    "knip": "^6.34.0",
+    "knip": "^6.38.0",
     "lefthook": "^2.1.14",
     "tailwindcss": "^4.3.3",
     "typescript": "^7.0.2",
