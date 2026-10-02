@@ -35,12 +35,14 @@ type Stats struct {
 
 const (
 	barWidth = 36
-	width    = barWidth + 9
+	width    = 1 + 10 + 1 + barWidth + 1 + 7
 
-	bold  = "\x1b[1m"
-	dim   = "\x1b[2m"
-	red   = "\x1b[31m"
-	reset = "\x1b[0m"
+	bold   = "\x1b[1m"
+	dim    = "\x1b[2m"
+	red    = "\x1b[31m"
+	green  = "\x1b[32m"
+	yellow = "\x1b[33m"
+	reset  = "\x1b[0m"
 )
 
 var client = &http.Client{Timeout: 2 * time.Second}
@@ -117,69 +119,105 @@ func number(value float64) string {
 	return strconv.FormatFloat(value, 'f', -1, 64)
 }
 
-func progress(label string, value float64, text string) []string {
-	filled := min(max(int(value/100*barWidth+0.5), 0), barWidth)
-	bar := strings.Repeat("█", filled) + strings.Repeat("░", barWidth-filled)
+func padLeft(text string, n int) string {
+	return strings.Repeat(" ", max(n-utf8.RuneCountInString(text), 0)) + text
+}
 
-	return []string{bold + label + reset, bar + " " + dim + text + reset}
+// Green until warn, yellow until crit, red beyond.
+func level(value, warn, crit float64) string {
+	switch {
+	case value >= crit:
+		return red
+	case value >= warn:
+		return yellow
+	default:
+		return green
+	}
+}
+
+func gauge(label string, percent float64, text, colour string) string {
+	filled := min(max(int(percent/100*barWidth+0.5), 0), barWidth)
+
+	return fmt.Sprintf(" %s%-10s%s %s%s%s%s%s%s %s%s%s",
+		dim, label, reset,
+		colour, strings.Repeat("█", filled), reset,
+		dim, strings.Repeat("░", barWidth-filled), reset,
+		bold, padLeft(text, 7), reset,
+	)
 }
 
 func stat(label, value string) string {
-	gap := max(width-utf8.RuneCountInString(label)-utf8.RuneCountInString(value), 1)
-
-	return bold + label + reset + strings.Repeat(" ", gap) + dim + value + reset
+	return fmt.Sprintf(" %s%-10s%s %s", dim, label, reset, value)
 }
 
-func render(stats *Stats, bootedAt time.Time, err error) []string {
-	rule := strings.Repeat("╌", width)
-	lines := []string{rule, "nuc.wouterds.com", rule, ""}
+type state struct {
+	stats    *Stats
+	bootedAt time.Time
+	polledAt time.Time
+	err      error
+}
 
-	if stats == nil {
-		if err != nil {
-			return append(lines, red+err.Error()+reset)
+func header(s state) string {
+	colour, indicator := yellow, "● connecting"
+	switch {
+	case s.err != nil || (s.stats != nil && time.Since(s.polledAt) > 3*time.Second):
+		colour, indicator = red, "● offline"
+	case s.stats != nil:
+		colour, indicator = green, "● live"
+	}
+
+	title := " nuc.wouterds.com"
+	gap := width - utf8.RuneCountInString(title) - utf8.RuneCountInString(indicator)
+
+	return bold + title + reset + strings.Repeat(" ", max(gap, 1)) + colour + indicator + reset
+}
+
+func render(s state, url string) []string {
+	lines := []string{header(s), dim + " " + strings.Repeat("─", width-1) + reset}
+
+	if stats := s.stats; stats != nil {
+		if stats.CPUTemp != nil {
+			lines = append(lines, gauge("CPU temp", *stats.CPUTemp, number(*stats.CPUTemp)+"ºC", level(*stats.CPUTemp, 75, 90)))
 		}
-		return append(lines, dim+"loading…"+reset)
-	}
-
-	if stats.CPUTemp != nil {
-		lines = append(lines, progress("CPU temp", *stats.CPUTemp, number(*stats.CPUTemp)+"ºC")...)
-	}
-	lines = append(lines, progress("CPU usage", stats.CPU, number(stats.CPU)+"%")...)
-	lines = append(lines, progress("Memory usage", stats.Memory, number(stats.Memory)+"%")...)
-	lines = append(lines, progress("Disk usage", stats.Disk, number(stats.Disk)+"%")...)
-	if stats.NVMeTemp != nil {
-		lines = append(lines, progress("NVMe temp", *stats.NVMeTemp, number(*stats.NVMeTemp)+"ºC")...)
-	}
-	// Peak is whatever the meter has reported, so it is only zero before a
-	// single reading has landed - which would divide the track by zero.
-	if stats.Power != nil && stats.PowerPeak != nil && *stats.PowerPeak > 0 {
-		power := *stats.Power
-		text := fmt.Sprintf("%.1f W", power)
-		if power >= 100 {
-			text = fmt.Sprintf("%.0f W", power)
+		lines = append(lines,
+			gauge("CPU", stats.CPU, number(stats.CPU)+"%", level(stats.CPU, 70, 90)),
+			gauge("Memory", stats.Memory, number(stats.Memory)+"%", level(stats.Memory, 70, 90)),
+			gauge("Disk", stats.Disk, number(stats.Disk)+"%", level(stats.Disk, 70, 90)),
+		)
+		if stats.NVMeTemp != nil {
+			lines = append(lines, gauge("NVMe temp", *stats.NVMeTemp, number(*stats.NVMeTemp)+"ºC", level(*stats.NVMeTemp, 60, 70)))
 		}
-		lines = append(lines, progress("Power draw", power / *stats.PowerPeak * 100, text)...)
+		// Peak is whatever the meter has reported, so it is only zero before a
+		// single reading has landed - which would divide the track by zero.
+		if stats.Power != nil && stats.PowerPeak != nil && *stats.PowerPeak > 0 {
+			power := *stats.Power
+			percent := power / *stats.PowerPeak * 100
+			text := fmt.Sprintf("%.1f W", power)
+			if power >= 100 {
+				text = fmt.Sprintf("%.0f W", power)
+			}
+			lines = append(lines, gauge("Power", percent, text, level(percent, 70, 90)))
+		}
+
+		uptime := stats.Uptime
+		if !s.bootedAt.IsZero() {
+			uptime = formatUptime(time.Since(s.bootedAt))
+		}
+
+		lines = append(lines,
+			"",
+			stat("Network", fmt.Sprintf("%s↓%s %.2f Mbps  %s↑%s %.2f Mbps", green, reset, stats.Download, yellow, reset, stats.Upload)),
+			stat("Total", fmt.Sprintf("%s↓%s %s  %s↑%s %s", green, reset, formatBytes(stats.Downloaded), yellow, reset, formatBytes(stats.Uploaded))),
+			stat("Processes", fmt.Sprintf("%d %s/ %d threads%s", stats.Processes, dim, stats.Threads, reset)),
+			stat("Uptime", uptime),
+		)
 	}
 
-	uptime := stats.Uptime
-	if !bootedAt.IsZero() {
-		uptime = formatUptime(time.Since(bootedAt))
+	if s.err != nil {
+		lines = append(lines, "", " "+red+s.err.Error()+reset)
 	}
 
-	lines = append(lines,
-		"",
-		strings.Repeat("╌", width),
-		stat("Network", fmt.Sprintf("↓ %.2f Mbps ↑ %.2f Mbps", stats.Download, stats.Upload)),
-		stat("Transferred", fmt.Sprintf("↓ %s ↑ %s", formatBytes(stats.Downloaded), formatBytes(stats.Uploaded))),
-		stat("Processes", fmt.Sprintf("%d / %d threads", stats.Processes, stats.Threads)),
-		stat("Uptime", uptime),
-	)
-
-	if err != nil {
-		lines = append(lines, "", red+err.Error()+reset)
-	}
-
-	return lines
+	return append(lines, "", dim+" "+url+" · ctrl-c to quit"+reset)
 }
 
 func main() {
@@ -187,24 +225,23 @@ func main() {
 	flag.Parse()
 
 	var (
-		mu       sync.Mutex
-		stats    *Stats
-		bootedAt time.Time
-		lastErr  error
+		mu sync.Mutex
+		s  state
 	)
 
 	go func() {
 		for {
-			next, err := fetch(*url)
+			stats, err := fetch(*url)
 
 			mu.Lock()
-			lastErr = err
-			if next != nil {
-				stats = next
+			s.err = err
+			if stats != nil {
+				s.stats = stats
+				s.polledAt = time.Now()
 				// Only the first reading is used - the clock runs locally from
 				// there, so a slow or failed poll never stalls it.
-				if d, ok := parseUptime(next.Uptime); ok && bootedAt.IsZero() {
-					bootedAt = time.Now().Add(-d)
+				if d, ok := parseUptime(stats.Uptime); ok && s.bootedAt.IsZero() {
+					s.bootedAt = time.Now().Add(-d)
 				}
 			}
 			mu.Unlock()
@@ -229,7 +266,7 @@ func main() {
 			return
 		case <-ticker.C:
 			mu.Lock()
-			lines := render(stats, bootedAt, lastErr)
+			lines := render(s, *url)
 			mu.Unlock()
 
 			fmt.Print("\x1b[H" + strings.Join(lines, "\x1b[K\n") + "\x1b[K\x1b[J")
