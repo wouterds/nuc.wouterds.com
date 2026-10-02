@@ -33,3 +33,13 @@ Set `API_URL` in `.env` — see `.env.example`.
 Pushing to `main` builds the image, pushes it to `ghcr.io` tagged `latest` and
 the short commit SHA, then deploys over an SSH-through-Cloudflare-tunnel to the
 NUC, where nginx fronts the app and proxies glances.
+
+## CLI
+
+`cli/` holds a dependency-free Go client that draws the same stats live in a
+terminal, polling `/api` once a second.
+
+```sh
+cd cli && go build -o nuc . && sudo mv nuc /usr/local/bin/
+nuc                                   # or: nuc -url http://localhost/api
+```
