@@ -9,3 +9,4 @@ build
 .react-router
 .cache
 .env*
+cli
