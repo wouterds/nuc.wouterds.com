@@ -140,8 +140,8 @@ func gauge(label string, percent float64, text, colour string) string {
 
 	return fmt.Sprintf(" %s%-10s%s %s%s%s%s%s%s %s%s%s",
 		dim, label, reset,
-		colour, strings.Repeat("█", filled), reset,
-		dim, strings.Repeat("░", barWidth-filled), reset,
+		colour, strings.Repeat("⣿", filled), reset,
+		dim, strings.Repeat("⣀", barWidth-filled), reset,
 		bold, padLeft(text, 7), reset,
 	)
 }
