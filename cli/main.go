@@ -176,16 +176,17 @@ func render(s state, url string) []string {
 	lines := []string{header(s), dim + " " + strings.Repeat("─", width-1) + reset}
 
 	if stats := s.stats; stats != nil {
+		var gauges []string
 		if stats.CPUTemp != nil {
-			lines = append(lines, gauge("CPU temp", *stats.CPUTemp, number(*stats.CPUTemp)+"ºC", level(*stats.CPUTemp, 75, 90)))
+			gauges = append(gauges, gauge("CPU temp", *stats.CPUTemp, number(*stats.CPUTemp)+"ºC", level(*stats.CPUTemp, 75, 90)))
 		}
-		lines = append(lines,
+		gauges = append(gauges,
 			gauge("CPU", stats.CPU, number(stats.CPU)+"%", level(stats.CPU, 70, 90)),
 			gauge("Memory", stats.Memory, number(stats.Memory)+"%", level(stats.Memory, 70, 90)),
 			gauge("Disk", stats.Disk, number(stats.Disk)+"%", level(stats.Disk, 70, 90)),
 		)
 		if stats.NVMeTemp != nil {
-			lines = append(lines, gauge("NVMe temp", *stats.NVMeTemp, number(*stats.NVMeTemp)+"ºC", level(*stats.NVMeTemp, 60, 70)))
+			gauges = append(gauges, gauge("NVMe temp", *stats.NVMeTemp, number(*stats.NVMeTemp)+"ºC", level(*stats.NVMeTemp, 60, 70)))
 		}
 		// Peak is whatever the meter has reported, so it is only zero before a
 		// single reading has landed - which would divide the track by zero.
@@ -196,7 +197,13 @@ func render(s state, url string) []string {
 			if power >= 100 {
 				text = fmt.Sprintf("%.0f W", power)
 			}
-			lines = append(lines, gauge("Power", percent, text, level(percent, 70, 90)))
+			gauges = append(gauges, gauge("Power", percent, text, level(percent, 70, 90)))
+		}
+		for i, g := range gauges {
+			if i > 0 {
+				lines = append(lines, "")
+			}
+			lines = append(lines, g)
 		}
 
 		uptime := stats.Uptime
