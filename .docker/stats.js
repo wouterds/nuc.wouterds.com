@@ -59,31 +59,34 @@ const throughput = (counters) => {
 
 // Cached rather than fetched per poll, and any failure reads as "no meter"
 // instead of taking the whole response down with it.
-const readPower = async (r) => {
-  const cached = ngx.shared.meter.get("power");
+const readMeter = async (r) => {
+  const cached = ngx.shared.meter.get("reading");
 
   if (cached !== undefined) {
-    return cached === "" ? null : Number(cached);
+    return JSON.parse(cached);
   }
 
-  let watts = null;
+  const meter = { power: null, energy: null };
 
   try {
     const response = await r.subrequest("/internal-meter", { method: "GET" });
 
     if (response.status === 200) {
-      const reading = JSON.parse(response.responseText).active_power_w;
-      if (typeof reading === "number") {
-        watts = Math.round(reading * 10) / 10;
+      const reading = JSON.parse(response.responseText);
+      if (typeof reading.active_power_w === "number") {
+        meter.power = Math.round(reading.active_power_w * 10) / 10;
+      }
+      if (typeof reading.total_power_import_kwh === "number") {
+        meter.energy = reading.total_power_import_kwh;
       }
     }
   } catch (e) {
     r.error(`Could not read the meter: ${e}`);
   }
 
-  ngx.shared.meter.set("power", watts === null ? "" : String(watts));
+  ngx.shared.meter.set("reading", JSON.stringify(meter));
 
-  return watts;
+  return meter;
 };
 
 // The scale is nothing but what the meter has actually reported: the first
@@ -131,7 +134,8 @@ export default async (r) => {
 
     const counters = readInterface();
     const rates = counters ? throughput(counters) : { download: 0, upload: 0 };
-    const power = await readPower(r);
+    const meter = await readMeter(r);
+    const power = meter.power;
 
     r.headersOut["Content-Type"] = "application/json";
     r.return(
@@ -149,6 +153,7 @@ export default async (r) => {
         uploaded: counters ? counters.sent : 0,
         power,
         power_peak: power === null ? null : powerPeak(power),
+        energy: meter.energy,
         processes: data.processcount.total,
         threads: data.processcount.thread,
       }),
