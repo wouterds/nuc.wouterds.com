@@ -23,3 +23,6 @@ See [README.md](README.md) for the stack and how it deploys.
 `src/routes.ts` declares routes explicitly; there is no file-based convention.
 Route modules take their loader data from the generated `./+types/*` namespace,
 not `useLoaderData`. Everything deployment-related lives in `.docker/`.
+
+`rack/` is the 3D-printed rack the NUC sits in (OpenSCAD, no JavaScript). It has
+its own [AGENTS.md](rack/AGENTS.md).

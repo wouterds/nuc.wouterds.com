@@ -34,6 +34,11 @@ Pushing to `main` builds the image, pushes it to `ghcr.io` tagged `latest` and
 the short commit SHA, then deploys over an SSH-through-Cloudflare-tunnel to the
 NUC, where nginx fronts the app and proxies glances.
 
+## Rack
+
+`rack/` holds the 3D-printed rack the NUC sits in, with a 120 mm fan underneath:
+OpenSCAD source, print-ready STLs and renders. See [rack/README.md](rack/README.md).
+
 ## CLI
 
 `cli/` holds a dependency-free Go client that draws the same stats live in a
